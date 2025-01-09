@@ -18,22 +18,7 @@ Mat detectAndAlignFace(Mat& image, CascadeClassifier& faceDetector) {
         gray = image.clone();
     }
 
-    faceDetector.detectMultiScale(
-        gray,          
-        faces,         
-        1.05,          
-        2,             
-        0,             
-        Size(20, 20)   
-    );
-
-    // Save detected face regions for debugging purposes
-    Mat debugImage = image.clone();
-    for (const auto& face : faces) {
-        rectangle(debugImage, face, Scalar(255, 0, 0), 2);
-    }
-    static int imageCount = 0;
-    imwrite("debug_detection_" + to_string(imageCount++) + ".jpg", debugImage);
+    faceDetector.detectMultiScale(gray, faces, 1.1, 3, 0, Size(30, 30));
     
     if (faces.empty()) {
         return Mat();
@@ -101,9 +86,8 @@ void readCSV(const string& filename, vector<Mat>& images, vector<int>& labels, C
     cout << "Skipped: " << skipped << " images" << endl;
 }
 
-
 int main() {
-
+    // Load face detector
     CascadeClassifier faceDetector;
     if (!faceDetector.load("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")) {
         cerr << "Error loading face detection model" << endl;
@@ -112,7 +96,6 @@ int main() {
 
     vector<Mat> images;
     vector<int> labels;
-
     string csvFile = "friend_faces.csv";
 
     readCSV(csvFile, images, labels, faceDetector);
@@ -122,12 +105,13 @@ int main() {
         return -1;
     }
 
+    // Create & train recognizer
     Ptr<LBPHFaceRecognizer> recognizer = LBPHFaceRecognizer::create();
     recognizer->train(images, labels);
 
-    // Save Model
+    // Save model
     recognizer->save("face_model.yml");
     cout << "Training complete; model saved to face_model.yml" << endl;
-
+    
     return 0;
 }
