@@ -1,0 +1,8 @@
+friend_faces/
+face_model.yml
+friend_faces.csv
+*.o
+*.out
+train_model
+test
+.vscode/
